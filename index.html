@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="Студия красоты Ничего Лишнего в Бийске. Электроэпиляция, массаж (ручной, Старвак), шугаринг, маникюр, прессотерапия. Ул. Петра Мерлина 67/1. Запись онлайн." />
     <meta name="keywords" content="салон красоты Бийск, массаж Бийск, электроэпиляция Бийск, шугаринг, коррекция тела, прессотерапия, Старвак, маникюр Бийск, удаление волос навсегда, студия красоты Петра Мерлина" />
     
@@ -49,9 +49,24 @@
       html { scroll-behavior: smooth; }
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      /* Loading Animation */
+      .loader {
+        border: 4px solid #AECCB2;
+        border-radius: 50%;
+        border-top: 4px solid #2F3E33;
+        width: 40px;
+        height: 40px;
+        -webkit-animation: spin 1s linear infinite; /* Safari */
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     </style>
     
-    <!-- JSON-LD Schema (Main) -->
+    <!-- JSON-LD Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -75,35 +90,56 @@
     }
     </script>
 
-    <!-- Import Map: Defines where to load modules from. Using esm.sh for reliability. -->
+    <!-- ES Module Shims: CRITICAL for mobile browser support of import maps -->
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+
+    <!-- Import Map -->
     <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.263.1",
-    "@google/genai": "https://esm.run/@google/genai",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.344.0",
+        "@google/genai": "https://esm.run/@google/genai"
+      }
+    }
+    </script>
     
     <!-- Babel for in-browser compilation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Error Handler for Mobile Debugging -->
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Global Error:", message);
+        // Only show alert if critical React mounting fails
+        if (document.getElementById('root') && document.getElementById('root').innerHTML.includes('Загрузка')) {
+             // alert("Ошибка загрузки сайта: " + message + ". Попробуйте обновить страницу.");
+        }
+      };
+    </script>
   </head>
   <body>
-    <!-- SEO fallback content -->
+    <!-- Fallback -->
     <noscript>
-      <h1>Салон красоты Ничего Лишнего в Бийске</h1>
-      <p>Мы предлагаем услуги: электроэпиляция, массаж, шугаринг, маникюр. Адрес: ул. Петра Мерлина 67/1.</p>
+      <div style="padding: 20px; text-align: center;">
+        <h1>Салон красоты Ничего Лишнего</h1>
+        <p>Пожалуйста, включите JavaScript для просмотра сайта.</p>
+      </div>
     </noscript>
 
-    <div id="root"></div>
+    <!-- Root Element -->
+    <div id="root">
+        <!-- Visual Loading State -->
+        <div style="height: 100vh; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #F4F9F5;">
+            <div class="loader"></div>
+            <p style="margin-top: 20px; color: #2F3E33; font-family: sans-serif;">Загрузка сайта...</p>
+        </div>
+    </div>
 
     <script type="text/babel" data-type="module">
       import React, { useState, useEffect, useRef } from "react";
-      import ReactDOM from "react-dom/client";
+      import { createRoot } from "react-dom/client";
       import { GoogleGenAI } from "@google/genai";
       import { Menu, X, MapPin, Phone, Clock, ExternalLink, Navigation, MessageCircle, Send, Loader2 } from "lucide-react";
 
@@ -170,8 +206,6 @@
 
       const sendMessageToGemini = async (currentHistory, newMessage) => {
         try {
-          // IMPORTANT: Client-side API key exposure is generally not recommended for high-traffic production apps, 
-          // but is standard for static demos. Ensure your API key has usage limits in Google Cloud Console.
           const apiKey = ""; 
           
           if (!apiKey) {
@@ -256,7 +290,6 @@
         };
 
         return (
-          // Chat Schema Markup
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" itemScope itemType="https://schema.org/ContactPoint">
              <meta itemProp="contactType" content="customer support" />
              <meta itemProp="availableLanguage" content="Russian" />
@@ -316,7 +349,7 @@
             const query = "Ничего Лишнего Бийск Петра Мерлина 67/1";
             window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(query)}`, '_blank', 'noopener,noreferrer');
           } else {
-             // Google Maps with coordinates (FIXED)
+             // Google Maps with coordinates
             const lat = 52.528407;
             const lng = 85.161699;
             window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank', 'noopener,noreferrer');
@@ -471,7 +504,7 @@
         );
       };
 
-      const root = ReactDOM.createRoot(document.getElementById('root'));
+      const root = createRoot(document.getElementById('root'));
       root.render(<App />);
     </script>
   </body>
