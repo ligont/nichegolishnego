@@ -12,6 +12,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content="Ничего Лишнего" />
+    <meta property="business:contact_data:street_address" content="ул. Петра Мерлина, 67/1" />
+    <meta property="business:contact_data:locality" content="Бийск" />
+    <meta property="business:contact_data:region" content="Алтайский край" />
+    <meta property="business:contact_data:country_name" content="Россия" />
 
     <title>Ничего Лишнего | Массаж и Электроэпиляция в Бийске</title>
     
@@ -21,15 +25,7 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     
-    <!-- React & Babel -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Lucide Icons (UMD) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.min.js"></script>
-
+    <!-- Config -->
     <script>
       tailwind.config = {
         theme: {
@@ -79,14 +75,27 @@
     }
     </script>
 
-    <!-- Import Map for Google GenAI -->
+    <!-- Core Libraries (UMD for stability on GitHub Pages) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide-react@0.263.1/dist/lucide-react.min.js"></script>
+
+    <!-- Import Map for Modules -->
     <script type="importmap">
-      {
-        "imports": {
-          "@google/genai": "https://esm.run/@google/genai"
-        }
-      }
-    </script>
+{
+  "imports": {
+    "@google/genai": "https://esm.run/@google/genai",
+    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
   </head>
   <body>
     <div id="root"></div>
@@ -95,7 +104,7 @@
       import { GoogleGenAI } from "@google/genai";
       
       const { useState, useEffect, useRef } = React;
-      // Get icons from global LucideReact object
+      // Destructure icons from the global lucideReact object
       const { Menu, X, MapPin, Phone, Clock, ExternalLink, Navigation, MessageCircle, Send, Loader2 } = lucideReact;
 
       // --- Custom Icons ---
@@ -161,14 +170,14 @@
 
       const sendMessageToGemini = async (currentHistory, newMessage) => {
         try {
-          // Note: In a real static file on GitHub pages, you might not have process.env.
-          // For this trial, the ChatWidget will just gracefully fail if no API key, or you can hardcode one for a temporary test (not recommended for production).
-          // Assuming user has a way to inject key or will use it locally with env.
-          const apiKey = ""; // You can't safely store API keys in frontend code on GitHub Pages.
+          // Warning: Exposing API keys in client-side code on public repos is not recommended for production.
+          // For GitHub Pages demo, users often inject this via local storage or a proxy, but here we place a placeholder.
+          const apiKey = ""; 
           
           if (!apiKey) {
-             console.warn("API Key is missing for Gemini.");
-             return "Для работы чата требуется настройка API ключа (не доступно в демо режиме).";
+             console.warn("API Key is missing.");
+             // Return a friendly mock response if no key is present, so the site doesn't crash.
+             return "Для работы ИИ-чата требуется API ключ. Пожалуйста, свяжитесь с администратором.";
           }
 
           const ai = new GoogleGenAI({ apiKey: apiKey });
@@ -242,19 +251,16 @@
           setInputValue('');
           setIsLoading(true);
           
-          // API Call simulated call since we don't have ENV key in static HTML
-          // const responseText = await sendMessageToGemini(messages, userMessage.text);
-          
-          // Fallback response for static demo
-          setTimeout(() => {
-             const responseText = "Это демо-версия сайта. Чат-бот требует серверной настройки API ключа.";
-             setMessages(prev => [...prev, { role: 'model', text: responseText }]);
-             setIsLoading(false);
-          }, 1000);
+          // Simulated delay for UI feel if API key is missing, or actual call
+          const responseText = await sendMessageToGemini(messages, userMessage.text);
+          setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+          setIsLoading(false);
         };
 
         return (
-          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+          // Added Schema.org markup for contact point
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" itemScope itemType="https://schema.org/ContactPoint">
+            <meta itemProp="contactType" content="customer support" />
             {isOpen && (
               <div className="mb-4 w-96 max-w-[90vw] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-10 fade-in duration-300">
                 <div className="bg-salon-dark p-4 flex justify-between items-center text-white">
@@ -311,7 +317,7 @@
             const query = "Ничего Лишнего Бийск Петра Мерлина 67/1";
             window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(query)}`, '_blank', 'noopener,noreferrer');
           } else {
-             // Google Maps with coordinates
+             // Google Maps with coordinates (FIXED)
             const lat = 52.528407;
             const lng = 85.161699;
             window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank', 'noopener,noreferrer');
